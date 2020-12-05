@@ -7,17 +7,15 @@ re.compile('#[0-9,1-f]{6,6}')
 """
 
 
-def fixNewLine(dictionary, key, value):
-    data = dictionary[key][()]
-    if (data[-2] == '\\'):
-        dictionary[key] = data[:-2]
-        fix = True
-    else:
-        fix = False
-    return fix, data, key, dictionary
+def fixNewLine(value):
+    data = value
+    if (repr(data[-1:]) == repr('\n')):
+        data = value[:-1]
+    return data
 
 
 def checkbyr(value):
+    value = int(value)
     if (value >= 1920) and (value <= 2002):
         output = True
     else:
@@ -26,6 +24,7 @@ def checkbyr(value):
 
 
 def checkiyr(value):
+    value = int(value)
     if (value >= 2010) and (value <= 2020):
         output = True
     else:
@@ -34,6 +33,7 @@ def checkiyr(value):
 
 
 def checkeyr(value):
+    value = int(value)
     if (value >= 2020) and (value <= 2030):
         output = True
     else:
@@ -41,7 +41,9 @@ def checkeyr(value):
     return output
 
 
-def checkhgt(key, value):
+def checkhgt(value):
+    key = value[-2:]
+    value = int(value[:-2])
     if key == 'cm':
         if (value >= 150) and (value <= 193):
             output = True
@@ -73,18 +75,43 @@ def checkhcl(s):
 
 
 def checkecl(color):
-    output = color in ['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth']
+    if len(color) == 3:
+        output = color in ['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth']
+    else:
+        output = False
     return output
 
 
 def checkpid(value):
-    p = re.compile('[0-9]{9,9}')
-    check = p.match(value)
-    if check != None:
-        output = True
+    if len(value) == 9:
+        p = re.compile('[0-9]{9,9}')
+        check = p.match(value)
+        if check == type(None):
+            output = False
+        else:
+            output = True
     else:
         output = False
 
+    return output
+
+
+def checkcid(value):
+    return True
+
+
+newreq = {'byr': checkbyr,
+          'iyr': checkiyr,
+          'eyr': checkeyr,
+          'hgt': checkhgt,
+          'hcl': checkhcl,
+          'ecl': checkecl,
+          'pid': checkpid,
+          'cid': checkcid}
+
+
+def check(command, arg):
+    output = newreq[command](arg)
     return output
 
 
@@ -98,15 +125,24 @@ for item in passports:
     if (list(set(req) - set(keys)) == []):
         phase1.append(item)
 #
-newreq = {'byr': checkbyr,
+
+
+"""newreq = {'byr': checkbyr,
           'iyr': checkiyr,
           'eyr': checkeyr,
           'hgt': checkhgt,
           'hcl': checkhcl,
           'ecl': checkecl,
-          'pid': checkpid}
+          'pid': checkpid}"""
+phase2 = []
 for item in phase1:
-    reset = False
-    while reset == False:
-        keyList = item.keys()
-        check
+    condition = True
+    for key, value in item.items():
+        value = fixNewLine(value)
+        if condition == False:
+            break
+
+        condition = condition*check(command=key, arg=value)
+    if condition:
+        phase2.append(item)
+print(len(phase2))
