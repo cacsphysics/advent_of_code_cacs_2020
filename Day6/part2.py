@@ -1,5 +1,4 @@
 # Created by cacsphys
-import numpy as np
 
 
 def common(group):
